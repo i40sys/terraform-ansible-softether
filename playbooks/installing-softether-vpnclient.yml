@@ -1,0 +1,58 @@
+- become: yes
+  hosts: all
+  name: installing-softether-vpnclient
+  vars:
+    softether_vpnclient_path: "/docker-data/softether-vpnclient"
+  tasks:
+    - name: create directory path
+      file:
+        path: "{{ softether_vpnclient_path }}/config"
+        state: directory
+        mode: 0755
+    
+    - name: touch lang.config
+      copy:
+        content: ""
+        dest: "{{ softether_vpnclient_path }}/config/lang.config"
+        group: root
+        owner: root
+        mode: 0644
+
+    - name: touch vpn_client.config
+      copy:
+        content: ""
+        dest: "{{ softether_vpnclient_path }}/config/vpn_client.config"
+        group: root
+        owner: root
+        mode: 0644
+
+    - name: deploying docker-compose for softether-vpnclient
+      copy:
+        src: ../docker-compose.yml
+        dest: "{{ softether_vpnclient_path }}/docker-compose.yml"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: launch docker-compose softether-vpnclient service
+      docker_compose:
+        project_src: "{{ softether_vpnclient_path }}"
+        state: present
+        build: no
+        pull: yes
+    
+    - name: adding alias for vpncmd
+      lineinfile:
+        path: /root/.bashrc
+        line: "alias vpncmd='docker exec -it softether-vpnclient /usr/local/libexec/softether/vpncmd/vpncmd'"
+        owner: root
+        regexp: "^alias vpncmd='docker exec -it softether-vpnclient /usr/local/libexec/softether/vpncmd/vpncmd'$"
+        state: present
+        insertafter: EOF
+        create: True
+
+    - name: enabling remote access
+      shell: docker exec -it softether-vpnclient /usr/local/libexec/softether/vpncmd/vpncmd localhost /client /cmd RemoteEnable
+
+    - name: enabling VPN NIC events (TUNDownOnDisconnectEnable)
+      shell: docker exec -it softether-vpnclient /usr/local/libexec/softether/vpncmd/vpncmd localhost /client /cmd TUNDownOnDisconnectEnable
