@@ -1,3 +1,0 @@
-# credencials
-PRIVATE_KEY="~/.ssh/id_rsa"
-PUBLIC_KEY="~/.ssh/id_rsa.pub"

@@ -1,6 +1,6 @@
 #!/bin/bash
-source ../config/keys.conf
-source ../config/DO.conf
+source config/keys.conf
+source config/DO.conf
 # debug
 export TF_LOG=0
 
